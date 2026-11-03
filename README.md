@@ -14,7 +14,7 @@ sources ─► scanner ─► judge ─► reporter ─► reports/<date>/OVERVI
 
 ```bash
 git clone https://github.com/dmytroborbotko-pets/poc_scout.git
-cd poc-scout
+cd poc_scout
 ./setup.sh
 ```
 

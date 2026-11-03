@@ -1,0 +1,41 @@
+# Preset: open AI/ML and technical challenges with clear problem statements.
+# Verified 2026-11-03. Re-check any time with /poc-verify-sources (or "Verify sources" in the UI).
+sources:
+  - id: drivendata
+    name: DrivenData Competitions
+    url: https://www.drivendata.org/competitions/
+    category: challenge
+    access: html
+    update_frequency: monthly
+    status: unverified
+    last_verified: "2026-11-03"
+    last_seen_update: null
+    date_source: active competitions show only relative time ("4 weeks left")
+    enabled: false
+    notes: Very PoC-friendly but has no checkable date. Enable it if relative dates are good enough for you.
+
+  - id: itu-ai-for-good
+    name: ITU AI for Good — Innovation Factory
+    url: https://aiforgood.itu.int/about-ai-for-good/innovation-factory/
+    category: challenge
+    access: html
+    update_frequency: monthly
+    status: recommended
+    last_verified: "2026-11-03"
+    last_seen_update: "2026-07-28"
+    date_source: newest dated news item on the page (event dates in the future are ignored)
+    enabled: true
+    notes: Long page (~195k characters) — the scanner reads it in parts.
+
+  - id: usa-gov-challenges
+    name: USA.gov — active federal challenges
+    url: https://www.usa.gov/find-active-challenge
+    category: challenge
+    access: html
+    update_frequency: irregular
+    status: unverified
+    last_verified: "2026-11-03"
+    last_seen_update: null
+    date_source: listing shows no dates; each challenge page has its own
+    enabled: false
+    notes: Successor of challenge.gov. Enable if you accept undated listings.

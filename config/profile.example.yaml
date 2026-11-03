@@ -1,0 +1,21 @@
+# What you care about. Edit freely — comments and extra fields are kept by every mode.
+report_language: en   # en, uk, de, ...
+
+interests:
+  # Areas you want most. Leave empty to accept anything not excluded.
+  priority: []
+  # e.g. priority: [computer vision, robotics, climate, developer tools]
+
+  # Areas to reject outright.
+  excluded: []
+  # e.g. excluded: [crypto, gambling]
+
+  # Narrow topics allowed even inside an excluded area.
+  exceptions: []
+
+# Extra 1–5 scores on every report. None by default. Example:
+#   - name: portfolio_fit
+#     question: How much does this PoC strengthen my application for ML engineer roles?
+#     enabled: true
+#     affects_selection: false   # true = counts toward picking top ideas
+custom_axes: []

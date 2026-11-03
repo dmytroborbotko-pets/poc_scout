@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node scripts/config.mjs *)",
+      "Bash(node scripts/ids.mjs *)",
+      "Bash(node scripts/detect-tools.mjs)",
+      "Bash(node scripts/validate.mjs)",
+      "Bash(date)",
+      "Bash(date *)"
+    ]
+  }
+}

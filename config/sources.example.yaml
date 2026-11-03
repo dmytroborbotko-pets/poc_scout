@@ -1,0 +1,10 @@
+# Pages the scanner reads. Add presets with: node scripts/config.mjs preset <name>
+# (general-startups, eu-deep-tech, ai-ml-challenges) or add your own entry below,
+# then run /poc-verify-sources to check freshness.
+#
+# Freshness rules used by /poc-verify-sources:
+#   recommended — a checkable date on the page, not older than 12 months
+#   unverified  — no checkable date
+#   stale       — newest date older than 12 months
+#   manual      — cannot be read automatically (403, empty JS page, login)
+sources: []

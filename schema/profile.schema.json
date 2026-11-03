@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "profile.schema.json",
+  "title": "Profile",
+  "description": "What you care about. The judge uses this to drop ideas from excluded areas and to score extra axes you define.",
+  "type": "object",
+  "required": ["report_language", "interests"],
+  "properties": {
+    "report_language": {
+      "type": "string",
+      "pattern": "^[a-z]{2}(-[A-Z]{2})?$",
+      "default": "en",
+      "description": "Language of reports as a short code, e.g. en, uk, de."
+    },
+    "interests": {
+      "type": "object",
+      "required": ["priority", "excluded"],
+      "properties": {
+        "priority": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Areas you are most interested in. Empty means 'anything'."
+        },
+        "excluded": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Areas to drop entirely. An idea from one of these is rejected."
+        },
+        "exceptions": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Narrow topics allowed even though they fall inside an excluded area."
+        }
+      }
+    },
+    "custom_axes": {
+      "type": "array",
+      "description": "Optional extra scores (1–5) you want on every report, e.g. 'fits my job search'.",
+      "items": {
+        "type": "object",
+        "required": ["name", "question", "enabled", "affects_selection"],
+        "properties": {
+          "name": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$", "description": "Short id, lowercase with underscores." },
+          "question": { "type": "string", "minLength": 3, "description": "What the judge should answer when scoring this axis." },
+          "enabled": { "type": "boolean" },
+          "affects_selection": { "type": "boolean", "description": "If true, the score is added to the total used for picking top ideas. If false, it is shown for information only." }
+        }
+      }
+    }
+  }
+}

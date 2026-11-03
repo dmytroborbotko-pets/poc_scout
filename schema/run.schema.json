@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "run.schema.json",
+  "title": "Run",
+  "description": "How and when scans run: schedule, budget, models.",
+  "type": "object",
+  "required": ["schedule", "budget_usd", "notify"],
+  "properties": {
+    "schedule": {
+      "type": "object",
+      "required": ["enabled", "frequency", "hour", "minute"],
+      "properties": {
+        "enabled": { "type": "boolean", "description": "Run scans automatically. Apply with 'scripts/schedule.sh install'." },
+        "frequency": { "enum": ["weekly", "monthly"] },
+        "day_of_month": { "type": "integer", "minimum": 1, "maximum": 28, "description": "For monthly runs. Max 28 so every month has it." },
+        "weekday": { "type": "integer", "minimum": 0, "maximum": 6, "description": "For weekly runs. 0 = Sunday." },
+        "hour": { "type": "integer", "minimum": 0, "maximum": 23 },
+        "minute": { "type": "integer", "minimum": 0, "maximum": 59 }
+      }
+    },
+    "budget_usd": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Spending cap for one scan (claude --max-budget-usd). On a subscription this is a notional cost, but the cap still stops the run."
+    },
+    "notify": { "type": "boolean", "description": "Desktop notification when a scheduled scan finishes." },
+    "isolate": {
+      "type": "boolean",
+      "default": true,
+      "description": "Run scans without your personal Claude Code plugins and MCP servers (cheaper, more predictable)."
+    },
+    "models": {
+      "type": "object",
+      "description": "Model per agent: sonnet, opus or haiku.",
+      "properties": {
+        "scanner": { "enum": ["sonnet", "opus", "haiku"] },
+        "judge": { "enum": ["sonnet", "opus", "haiku"] },
+        "reporter": { "enum": ["sonnet", "opus", "haiku"] },
+        "builder": { "enum": ["sonnet", "opus", "haiku"] }
+      }
+    }
+  }
+}

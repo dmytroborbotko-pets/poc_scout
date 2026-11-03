@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tools.schema.json",
+  "title": "Tools",
+  "description": "Software Claude can drive with code. The judge looks here to see whether an idea can be built or simulated.",
+  "type": "object",
+  "required": ["tools"],
+  "properties": {
+    "tools": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "domain", "control", "installed"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "domain": { "type": "string", "description": "e.g. 3D, CAD, robotics, electronics, data/CV, web, other." },
+          "control": { "type": "string", "description": "How Claude drives it: CLI, Python API, headless, MCP. GUI-only tools do not belong here." },
+          "installed": { "type": "boolean", "description": "Set automatically by 'detect tools'." },
+          "detect": {
+            "type": "object",
+            "description": "How to check it is installed: any listed command on PATH or any listed path that exists.",
+            "properties": {
+              "commands": { "type": "array", "items": { "type": "string", "pattern": "^[A-Za-z0-9._+-]+$" } },
+              "paths": { "type": "array", "items": { "type": "string" } }
+            }
+          },
+          "install_cmd": {
+            "type": "object",
+            "description": "Command to install it, per operating system.",
+            "properties": {
+              "macos": { "type": "string" },
+              "linux": { "type": "string" }
+            }
+          },
+          "can_simulate": { "type": "string", "description": "What this tool lets a PoC model or build." }
+        }
+      }
+    }
+  }
+}

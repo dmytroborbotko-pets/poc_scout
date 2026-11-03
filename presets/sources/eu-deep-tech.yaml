@@ -1,0 +1,40 @@
+# Preset: EU deep-tech and innovation calls.
+# Verified 2026-11-03. Re-check any time with /poc-verify-sources (or "Verify sources" in the UI).
+sources:
+  - id: eic-challenges
+    name: EIC Accelerator Challenges
+    url: https://eic.ec.europa.eu/eic-funding-opportunities/eic-accelerator/eic-accelerator-challenges-2026_en
+    category: eu-innovation
+    access: html
+    update_frequency: yearly
+    status: recommended
+    last_verified: "2026-11-03"
+    last_seen_update: "2025-11-14"
+    date_source: only in the Info Day recording link; the page itself shows no date
+    enabled: false
+    notes: Off by default — year-specific URL (2026 work programme) that turns stale after 2026-11-14. Replace the URL with the next work programme's challenges page, run /poc-verify-sources, then enable.
+
+  - id: edf
+    name: European Defence Fund
+    url: https://defence-industry-space.ec.europa.eu/eu-defence-industry/european-defence-fund-edf-official-webpage-european-commission_en
+    category: eu-defence
+    access: html
+    update_frequency: yearly work programme + open calls
+    status: recommended
+    last_verified: "2026-11-03"
+    last_seen_update: "2026-09-28"
+    date_source: newest item under General publications
+    enabled: true
+
+  - id: itu-ai-for-good
+    name: ITU AI for Good — Innovation Factory
+    url: https://aiforgood.itu.int/about-ai-for-good/innovation-factory/
+    category: challenge
+    access: html
+    update_frequency: monthly
+    status: recommended
+    last_verified: "2026-11-03"
+    last_seen_update: "2026-07-28"
+    date_source: newest dated news item on the page (event dates in the future are ignored)
+    enabled: true
+    notes: Long page (~195k characters) — the scanner reads it in parts.

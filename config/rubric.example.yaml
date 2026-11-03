@@ -1,0 +1,38 @@
+# How the judge decides. These are the defaults — keep, edit, turn off (enabled: false) or add rules.
+tool_first: suggest   # suggest = note needed tools and propose installs later; strict = reject if a key tool is missing
+max_poc_days: 5       # ideas estimated above this are rejected
+
+# Hard rejection rules. One match is enough.
+no_go:
+  - id: hardware-no-sim
+    enabled: true
+    text: The core value is in hardware or physics and no adequate simulator exists (in strict mode — none in tools.yaml).
+  - id: closed-data
+    enabled: true
+    text: Needs closed data (classified, proprietary, personal) that open or synthetic data cannot replace.
+  - id: too-long
+    enabled: true
+    text: The PoC estimate is longer than max_poc_days.
+  - id: gui-only
+    enabled: true
+    text: The key tool can only be operated through a GUI, not code.
+  - id: excluded-area
+    enabled: true
+    text: The idea belongs to an area listed in profile.interests.excluded.
+
+# Built-in scores, 1–5 each. Every score needs a quote or link from the idea's source, otherwise it is 1.
+# weight multiplies the score in the total; 0 turns it off.
+scores:
+  code_controllability:
+    question: How completely can the PoC be built with code (no manual clicks, hardware, or people)?
+    weight: 1
+  data_availability:
+    question: Is there open or synthetic data for the core of the PoC?
+    weight: 1
+  simulation_fit:
+    question: Is there a tool that can build or simulate the core (installed or installable)?
+    weight: 1
+
+selection:
+  top_n: 5      # full reports per run
+  min_sum: 9    # weighted total below this is rejected (max with defaults: 15)

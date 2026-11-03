@@ -1,0 +1,13 @@
+# Real configs are personal — only *.example.yaml is tracked
+config/*.yaml
+!config/*.example.yaml
+
+# Runtime output
+reports/
+runs/
+state/
+logs/
+builds/
+
+node_modules/
+.DS_Store

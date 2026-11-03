@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "rubric.schema.json",
+  "title": "Rubric",
+  "description": "How the judge decides. Hard no-go rules reject an idea outright; scores rank the rest.",
+  "type": "object",
+  "required": ["tool_first", "max_poc_days", "no_go", "scores", "selection"],
+  "properties": {
+    "tool_first": {
+      "enum": ["suggest", "strict"],
+      "default": "suggest",
+      "description": "suggest = list the tools each idea needs and propose installing them later; strict = reject ideas whose core needs a tool you do not have."
+    },
+    "max_poc_days": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 60,
+      "description": "Ideas estimated to take longer than this are rejected."
+    },
+    "no_go": {
+      "type": "array",
+      "description": "Hard rejection rules. One match is enough. Turn off or edit the defaults, or add your own.",
+      "items": {
+        "type": "object",
+        "required": ["id", "text", "enabled"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+          "text": { "type": "string", "minLength": 5 },
+          "enabled": { "type": "boolean" }
+        }
+      }
+    },
+    "scores": {
+      "type": "object",
+      "description": "Built-in 1–5 scores. Each score must be backed by a quote or link from the idea's source, otherwise it counts as 1.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["question", "weight"],
+        "properties": {
+          "question": { "type": "string" },
+          "weight": { "type": "number", "minimum": 0, "maximum": 5, "description": "Multiplier in the total. 0 turns the score off." }
+        }
+      }
+    },
+    "selection": {
+      "type": "object",
+      "required": ["top_n", "min_sum"],
+      "properties": {
+        "top_n": { "type": "integer", "minimum": 1, "maximum": 50, "description": "How many ideas get a full report per run." },
+        "min_sum": { "type": "number", "minimum": 0, "description": "Ideas whose weighted total is below this are rejected even if there is room." }
+      }
+    }
+  }
+}

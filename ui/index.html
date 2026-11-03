@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PoC Scout</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <h1>PoC Scout</h1>
+      <p data-i18n="tagline"></p>
+    </div>
+    <div class="header-actions">
+      <button data-action="verify" data-i18n="btn_verify"></button>
+      <button data-action="scan" class="primary" data-i18n="btn_scan"></button>
+      <select id="lang" aria-label="Language">
+        <option value="en">EN</option>
+        <option value="uk">UK</option>
+      </select>
+    </div>
+  </header>
+
+  <nav id="nav"></nav>
+  <main id="main"></main>
+
+  <div id="job" class="panel hidden">
+    <div class="panel-head"><strong id="job-title"></strong><button id="job-close" data-i18n="btn_close"></button></div>
+    <pre id="job-log"></pre>
+  </div>
+
+  <dialog id="modal">
+    <div id="modal-body"></div>
+    <div class="modal-actions">
+      <button id="modal-cancel" data-i18n="btn_cancel"></button>
+      <button id="modal-ok" class="primary" data-i18n="btn_confirm"></button>
+    </div>
+  </dialog>
+
+  <script src="/app.js"></script>
+</body>
+</html>

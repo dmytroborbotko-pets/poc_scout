@@ -1,0 +1,22 @@
+{
+  "name": "poc-scout",
+  "version": "0.1.0",
+  "description": "Scan startup and challenge sources, pick ideas you can prove with code, write one-page PoC reports. Runs locally with Claude Code.",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "ui": "node ui/server.mjs",
+    "validate": "node scripts/validate.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "lint": "shellcheck setup.sh scripts/*.sh",
+    "pii-scan": "bash scripts/pii-scan.sh"
+  },
+  "dependencies": {
+    "ajv": "8.20.0",
+    "yaml": "2.9.1"
+  }
+}

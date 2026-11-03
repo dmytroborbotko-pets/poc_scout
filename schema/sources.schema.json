@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sources.schema.json",
+  "title": "Sources",
+  "description": "Pages the scanner reads. Only enabled sources are scanned.",
+  "type": "object",
+  "required": ["sources"],
+  "properties": {
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "url", "access", "enabled"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "Unique short id, lowercase with dashes." },
+          "name": { "type": "string", "minLength": 1 },
+          "url": { "type": "string", "pattern": "^https?://", "description": "Page or feed address." },
+          "category": { "type": "string", "description": "Free label, e.g. investor, challenge, government." },
+          "access": { "enum": ["rss", "html", "pdf"], "description": "How the page is delivered." },
+          "update_frequency": { "type": "string", "description": "How often it changes, e.g. weekly, monthly, yearly." },
+          "status": {
+            "enum": ["recommended", "unverified", "stale", "manual"],
+            "description": "Result of the last freshness check: recommended = dated and fresh; unverified = no checkable date; stale = older than 12 months; manual = cannot be read automatically."
+          },
+          "last_verified": { "type": ["string", "null"], "pattern": "^\\d{4}-\\d{2}-\\d{2}$", "description": "Date of the last freshness check." },
+          "last_seen_update": { "type": ["string", "null"], "description": "Newest publication date seen on the page (never a future event date)." },
+          "date_source": { "type": ["string", "null"], "description": "Where on the page that date was found." },
+          "enabled": { "type": "boolean" },
+          "notes": { "type": "string" }
+        }
+      }
+    }
+  }
+}

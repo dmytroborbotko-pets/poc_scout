@@ -1,0 +1,141 @@
+# Tools Claude can drive with code. "installed" is set by: node scripts/detect-tools.mjs
+# (tools without a "detect" block keep whatever you set by hand).
+# GUI-only software does not belong here.
+# Nothing here is installed automatically — /poc-tools proposes installs and asks first.
+tools:
+  # ---------- Core ----------
+  - name: Python 3
+    domain: data/CV
+    control: CLI / Python API
+    installed: false
+    detect: { commands: [python3] }
+    install_cmd: { macos: brew install python, linux: sudo apt install python3 python3-venv }
+    can_simulate: scripting, data processing, glue for every other tool
+
+  - name: uv (Python env manager)
+    domain: other
+    control: CLI
+    installed: false
+    detect: { commands: [uv] }
+    install_cmd: { macos: brew install uv, linux: curl -LsSf https://astral.sh/uv/install.sh | sh }
+    can_simulate: isolated Python environments per PoC
+
+  - name: Node.js
+    domain: web
+    control: CLI (npm, npx)
+    installed: false
+    detect: { commands: [node] }
+    install_cmd: { macos: brew install node, linux: see https://nodejs.org/en/download }
+    can_simulate: web demos, dashboards, maps, C2-style UIs (React/TypeScript)
+
+  - name: Docker
+    domain: other
+    control: CLI (docker, docker compose)
+    installed: false
+    detect: { commands: [docker] }
+    install_cmd: { macos: brew install --cask docker, linux: sudo apt install docker.io docker-compose-v2 }
+    can_simulate: isolated services, network topologies, Linux-only tools (e.g. ROS 2)
+
+  # ---------- Data / ML / CV ----------
+  - name: Python ML/CV stack (numpy, pandas, scikit-learn, opencv, torch, ultralytics)
+    domain: data/CV
+    control: Python API
+    installed: false   # set to true by hand once installed in your env
+    install_cmd:
+      macos: uv venv ~/.venvs/pocscout && uv pip install --python ~/.venvs/pocscout/bin/python numpy pandas scipy scikit-learn opencv-python torch torchvision ultralytics matplotlib
+      linux: uv venv ~/.venvs/pocscout && uv pip install --python ~/.venvs/pocscout/bin/python numpy pandas scipy scikit-learn opencv-python torch torchvision ultralytics matplotlib
+    can_simulate: detection, tracking, segmentation, classic ML, signal processing
+
+  - name: JupyterLab
+    domain: data/CV
+    control: headless (jupyter nbconvert --execute)
+    installed: false
+    detect: { commands: [jupyter-lab, jupyter] }
+    install_cmd: { macos: uv tool install jupyterlab, linux: uv tool install jupyterlab }
+    can_simulate: reproducible notebooks as PoC reports
+
+  - name: Ollama
+    domain: data/CV
+    control: CLI + local HTTP API
+    installed: false
+    detect: { commands: [ollama] }
+    install_cmd: { macos: brew install ollama, linux: curl -fsSL https://ollama.com/install.sh | sh }
+    can_simulate: local LLMs without network (offline / on-prem scenarios), RAG, agents
+
+  # ---------- 3D / CAD ----------
+  - name: Blender
+    domain: 3D
+    control: headless (blender --background --python script.py)
+    installed: false
+    detect: { commands: [blender], paths: [/Applications/Blender.app/Contents/MacOS/Blender] }
+    install_cmd: { macos: brew install --cask blender, linux: sudo snap install blender --classic }
+    can_simulate: 3D scenes, synthetic CV datasets, rigid-body physics
+
+  - name: CadQuery
+    domain: CAD
+    control: Python API
+    installed: false   # Python package — set to true by hand once installed
+    install_cmd: { macos: uv pip install --python ~/.venvs/pocscout/bin/python cadquery, linux: uv pip install --python ~/.venvs/pocscout/bin/python cadquery }
+    can_simulate: parametric parts, STEP/STL export
+
+  - name: FreeCAD
+    domain: CAD
+    control: headless (freecadcmd script.py)
+    installed: false
+    detect: { commands: [freecadcmd, FreeCADCmd], paths: [/Applications/FreeCAD.app/Contents/Resources/bin/freecadcmd] }
+    install_cmd: { macos: brew install --cask freecad, linux: sudo apt install freecad }
+    can_simulate: parametric CAD, FEM strength checks (CalculiX)
+
+  - name: OpenSCAD
+    domain: CAD
+    control: CLI (openscad -o out.stl in.scad)
+    installed: false
+    detect: { commands: [openscad], paths: [/Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD] }
+    install_cmd: { macos: brew install --cask openscad@snapshot, linux: sudo apt install openscad }
+    can_simulate: scripted CSG geometry, STL for 3D printing
+
+  # ---------- Electronics ----------
+  - name: KiCad
+    domain: electronics
+    control: CLI (kicad-cli) + Python API
+    installed: false
+    detect: { commands: [kicad-cli], paths: [/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli] }
+    install_cmd: { macos: brew install --cask kicad, linux: sudo apt install kicad }
+    can_simulate: schematics, PCB, DRC/ERC, Gerber/BOM export
+
+  - name: ngspice
+    domain: electronics
+    control: CLI (ngspice -b netlist.cir)
+    installed: false
+    detect: { commands: [ngspice] }
+    install_cmd: { macos: brew install ngspice, linux: sudo apt install ngspice }
+    can_simulate: analog/digital circuit simulation
+
+  # ---------- Robotics / drones ----------
+  - name: pymavlink / MAVProxy
+    domain: robotics
+    control: Python API / CLI
+    installed: false
+    detect: { commands: [mavproxy.py] }
+    install_cmd: { macos: uv tool install mavproxy, linux: uv tool install mavproxy }
+    can_simulate: MAVLink telemetry, flight log analysis
+
+  - name: ArduPilot SITL
+    domain: robotics
+    control: CLI (sim_vehicle.py) + MAVLink
+    installed: false
+    detect: { commands: [sim_vehicle.py] }
+    install_cmd:
+      macos: see https://ardupilot.org/dev/docs/building-setup-mac.html (use a stable branch, e.g. Copter-4.6)
+      linux: see https://ardupilot.org/dev/docs/building-setup-linux.html
+    can_simulate: copter/plane/rover autopilot, missions, failsafes (simple physics)
+
+  - name: Gazebo
+    domain: robotics
+    control: CLI headless (gz sim -s)
+    installed: false
+    detect: { commands: [gz] }
+    install_cmd:
+      macos: brew tap osrf/simulation && brew install gz-harmonic
+      linux: see https://gazebosim.org/docs/harmonic/install_ubuntu
+    can_simulate: 3D physics, sensors (camera, lidar, IMU), multi-robot scenes

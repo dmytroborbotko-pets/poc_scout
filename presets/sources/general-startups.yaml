@@ -1,0 +1,40 @@
+# Preset: general startup idea lists from investors and open data challenges.
+# Verified 2026-11-03. Re-check any time with /poc-verify-sources (or "Verify sources" in the UI).
+sources:
+  - id: yc-rfs
+    name: Y Combinator Requests for Startups
+    url: https://www.ycombinator.com/rfs
+    category: investor
+    access: html
+    update_frequency: per batch (~4 per year)
+    status: recommended
+    last_verified: "2026-11-03"
+    last_seen_update: Winter 2027 batch
+    date_source: newest batch tab; the page has no explicit date
+    enabled: true
+
+  - id: a16z-big-ideas
+    name: a16z Big Ideas (yearly)
+    url: https://www.a16z.news/p/big-ideas-2026-part-2
+    category: investor
+    access: html
+    update_frequency: yearly (December)
+    status: recommended
+    last_verified: "2026-11-03"
+    last_seen_update: "2025-12-10"
+    date_source: post date
+    enabled: true
+    notes: Year-specific URL. Each December a new edition appears — replace the URL, otherwise this turns stale after 2026-12-10.
+
+  - id: drivendata
+    name: DrivenData Competitions
+    url: https://www.drivendata.org/competitions/
+    category: challenge
+    access: html
+    update_frequency: monthly
+    status: unverified
+    last_verified: "2026-11-03"
+    last_seen_update: null
+    date_source: active competitions show only relative time ("4 weeks left")
+    enabled: false
+    notes: Very PoC-friendly (pure data/ML challenges) but has no checkable date. Enable it if relative dates are good enough for you.

@@ -13,7 +13,7 @@ sources ─► scanner ─► judge ─► reporter ─► reports/<date>/OVERVI
 ## Quickstart
 
 ```bash
-git clone https://github.com/dmytroborbotko-pets/poc-scout.git
+git clone https://github.com/dmytroborbotko-pets/poc_scout.git
 cd poc-scout
 ./setup.sh
 ```

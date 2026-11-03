@@ -3,7 +3,7 @@
 // Mutating requests need header "X-PocScout: 1" (blocks cross-site form posts) and a
 // Host header of 127.0.0.1/localhost (blocks DNS rebinding).
 import { execFileSync, spawn } from 'node:child_process';
-import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { homedir } from 'node:os';
 import { extname, join, resolve, sep } from 'node:path';
@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 import { NAMES, REPO, YAML, diff, read, render, root, write } from '../scripts/lib/config.mjs';
 
 const UI = join(REPO, 'ui');
-const STATIC = { '/': 'index.html', '/app.js': 'app.js', '/style.css': 'style.css', '/i18n/en.json': 'i18n/en.json', '/i18n/uk.json': 'i18n/uk.json' };
+const STATIC = { '/': 'index.html', '/app.js': 'app.js', '/wizard.js': 'wizard.js', '/style.css': 'style.css', '/i18n/en.json': 'i18n/en.json', '/i18n/uk.json': 'i18n/uk.json' };
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8' };
 const STATUSES = ['new', 'in-progress', 'done'];
 
@@ -23,6 +23,8 @@ const ACTIONS = {
   'schedule-status': { claude: false, cmd: ['bash', [join(REPO, 'scripts', 'schedule.sh'), 'status']] },
   verify: { claude: true, cmd: ['bash', [join(REPO, 'scripts', 'run_scan.sh'), 'verify']] },
   scan: { claude: true, cmd: ['bash', [join(REPO, 'scripts', 'run_scan.sh'), 'scan']] },
+  // First-run scan from the setup wizard: 2 sources, 2 reports.
+  'scan-small': { claude: true, cmd: ['bash', [join(REPO, 'scripts', 'run_scan.sh'), 'scan']], env: { POC_MAX_SOURCES: '2', POC_TOP_N: '2' } },
 };
 const jobs = new Map();
 let jobSeq = 0;
@@ -66,7 +68,8 @@ function setStatus(rel, status) {
 function describeAction(action) {
   if (!ACTIONS[action].claude) return null;
   try {
-    return JSON.parse(execFileSync('bash', [join(REPO, 'scripts', 'run_scan.sh'), '--describe', action], { cwd: root(), env: { ...process.env, POCSCOUT_ROOT: root() }, encoding: 'utf8' }));
+    const mode = ACTIONS[action].cmd[1].at(-1);
+    return JSON.parse(execFileSync('bash', [join(REPO, 'scripts', 'run_scan.sh'), '--describe', mode], { cwd: root(), env: { ...process.env, ...ACTIONS[action].env, POCSCOUT_ROOT: root() }, encoding: 'utf8' }));
   } catch (e) {
     return { error: e.stderr?.toString() || e.message };
   }
@@ -83,11 +86,24 @@ function trusted() {
   return false;
 }
 
+// Setup-wizard progress lives next to the other runtime state, not in the browser,
+// so it survives other browsers and is visible to anyone who opens the UI.
+const wizardFile = () => join(root(), 'state', 'wizard.json');
+function readWizard() {
+  try { return { step: 0, done: false, skipped: false, ...JSON.parse(readFileSync(wizardFile(), 'utf8')) }; } catch { return { step: 0, done: false, skipped: false }; }
+}
+function writeWizard(w) {
+  mkdirSync(join(root(), 'state'), { recursive: true });
+  const clean = { step: Number.isInteger(w.step) ? Math.max(0, Math.min(w.step, 6)) : 0, done: w.done === true, skipped: w.skipped === true };
+  writeFileSync(wizardFile(), `${JSON.stringify(clean)}\n`);
+  return clean;
+}
+
 function startJob(action) {
   if ([...jobs.values()].some((j) => j.exit === null)) throw Object.assign(new Error('another action is still running'), { status: 409 });
   const [cmd, args] = ACTIONS[action].cmd;
   const job = { id: String(++jobSeq), action, log: '', exit: null, started: new Date().toISOString() };
-  const child = spawn(cmd, args, { cwd: root(), env: { ...process.env, POCSCOUT_ROOT: root(), POCSCOUT_FROM_UI: '1' } });
+  const child = spawn(cmd, args, { cwd: root(), env: { ...process.env, ...ACTIONS[action].env, POCSCOUT_ROOT: root(), POCSCOUT_FROM_UI: '1' } });
   const add = (b) => { job.log = (job.log + b.toString()).slice(-20000); };
   child.stdout.on('data', add);
   child.stderr.on('data', add);
@@ -149,6 +165,8 @@ export function createApp() {
       if (req.method === 'GET' && url.pathname === '/api/trust') return send(res, 200, { trusted: trusted(), folder: root() });
       if (req.method === 'GET' && url.pathname === '/api/reports') return send(res, 200, listReports());
       if (req.method === 'GET' && url.pathname === '/api/report') return send(res, 200, { text: readFileSync(safeReport(url.searchParams.get('path')), 'utf8') });
+      if (url.pathname === '/api/wizard' && req.method === 'GET') return send(res, 200, readWizard());
+      if (url.pathname === '/api/wizard' && req.method === 'PUT') return send(res, 200, writeWizard(await body(req)));
       if (req.method === 'POST' && url.pathname === '/api/report-status') {
         const { path, status } = await body(req);
         setStatus(path, status);

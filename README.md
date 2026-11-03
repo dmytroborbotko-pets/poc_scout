@@ -31,7 +31,7 @@ Example output: [one report from a real test scan](docs/example-report.md).
 | | Technical | Technical but quick | Non-technical |
 |---|---|---|---|
 | You use | files, agents, commands | Claude asks you questions | a page in your browser |
-| Setup questions | all of them | only what's needed to start | none — sensible defaults |
+| Setup questions | all of them | only what's needed to start | a 7-step wizard in the browser (skip it any time) |
 | Finds and checks sources for you | — | yes | via "Verify sources" |
 
 All three edit the **same files in `config/`**, validated against `schema/`. Switch any time: open the UI with `npm run ui`, run `claude "/poc-setup"`, or edit the YAML by hand — comments and extra fields you add are kept by every mode. See [docs/modes.md](docs/modes.md).

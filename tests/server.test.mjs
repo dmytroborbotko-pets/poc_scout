@@ -100,3 +100,17 @@ test('describe shows permissions for Claude actions without running anything', a
   assert.ok(a.scan.describe.allowedTools.includes('WebFetch'));
   assert.equal(a['detect-tools'].claude, false);
 });
+
+test('wizard state: defaults, saves progress, clamps bad input', async () => {
+  assert.deepEqual((await call('GET', '/api/wizard')).body, { step: 0, done: false, skipped: false });
+  assert.deepEqual((await call('PUT', '/api/wizard', { step: 3 })).body, { step: 3, done: false, skipped: false });
+  assert.equal((await call('GET', '/api/wizard')).body.step, 3);
+  assert.deepEqual((await call('PUT', '/api/wizard', { step: 99, done: 'yes' })).body, { step: 6, done: false, skipped: false });
+  assert.equal((await call('PUT', '/api/wizard', { step: 1 }, { header: false })).status, 403);
+});
+
+test('small first scan is limited to 2 sources and 2 reports', async () => {
+  const a = (await call('GET', '/api/actions')).body;
+  assert.equal(a['scan-small'].describe.prompt, '/poc-scan max_sources=2 top_n=2');
+  assert.equal(a['scan-small'].describe.permission_mode, 'dontAsk');
+});

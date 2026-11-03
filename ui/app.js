@@ -11,6 +11,7 @@ let presets = [];
 let actions = {};
 let current = location.hash.slice(1) || 'interests';
 let trust = { trusted: true };
+let wizard = { active: false, step: 0 }; // setup funnel (ui/wizard.js)
 
 // ---------- helpers ----------
 const $ = (s) => document.querySelector(s);
@@ -376,6 +377,8 @@ async function reports() {
 const RENDER = { interests, sources, tools, rubric, schedule, reports };
 
 async function render() {
+  document.body.classList.toggle('wizard-mode', wizard.active);
+  if (wizard.active) { await renderWizard(); document.querySelectorAll('[data-i18n]').forEach((n) => { n.textContent = t(n.dataset.i18n); }); return; }
   $('#trust').classList.toggle('hidden', trust.trusted);
   $('#trust').replaceChildren(el('strong', {}, t('trust_title')), el('p', {}, t('trust_body')), el('code', {}, `cd "${trust.folder}" && claude`), el('p', { class: 'hint' }, t('trust_note')));
   $('#nav').replaceChildren(...SECTIONS.map((s) => el('a', { href: `#${s}`, class: s === current ? 'active' : '' }, t(`nav_${s}`))));
@@ -388,8 +391,10 @@ async function render() {
   document.querySelectorAll('[data-i18n]').forEach((n) => { n.textContent = t(n.dataset.i18n); });
 }
 
-async function load() {
-  [cfg, presets, actions, trust] = await Promise.all([api('GET', '/api/config'), api('GET', '/api/presets'), api('GET', '/api/actions'), api('GET', '/api/trust')]);
+async function load(initial = false) {
+  let w;
+  [cfg, presets, actions, trust, w] = await Promise.all([api('GET', '/api/config'), api('GET', '/api/presets'), api('GET', '/api/actions'), api('GET', '/api/trust'), api('GET', '/api/wizard')]);
+  if (initial && !w.done && !w.skipped) wizard = { active: true, step: w.step };
   for (const c of Object.values(cfg)) c.orig = structuredClone(c.data);
   await render();
 }
@@ -408,10 +413,11 @@ window.addEventListener('hashchange', () => {
 $('#lang').addEventListener('change', async (e) => { await setLang(e.target.value); render(); });
 document.querySelectorAll('[data-action]').forEach((b) => b.addEventListener('click', () => runAction(b.dataset.action)));
 $('#job-close').addEventListener('click', () => $('#job').classList.add('hidden'));
+$('#wizard-btn').addEventListener('click', () => { wizard = { active: true, step: 0 }; render(); });
 
 (async () => {
   let lang = 'en';
   try { lang = localStorage.getItem('pocscout-lang') || (navigator.language.startsWith('uk') ? 'uk' : 'en'); } catch { /* ignore */ }
   await setLang(lang);
-  await load();
+  await load(true);
 })();

@@ -77,3 +77,22 @@ details summary { cursor: pointer; margin-top: 10px; }
 .banner p { margin: 6px 0; }
 .banner code { display: inline-block; margin: 4px 0; padding: 4px 8px; }
 #modal-body:focus { outline: none; }
+/* ---------- setup wizard ---------- */
+body.wizard-mode #nav, body.wizard-mode #trust { display: none; }
+section.wizard { max-width: 680px; margin: 0 auto; }
+.wz-top { display: flex; justify-content: space-between; align-items: center; }
+.wz-bar { height: 4px; background: var(--line); border-radius: 2px; margin: 8px 0 18px; overflow: hidden; }
+.wz-bar > div { height: 100%; background: var(--accent); }
+section.wizard h2 { font-size: 22px; }
+.wz-context { color: var(--muted); margin: 4px 0 14px; }
+.wz-nav { display: flex; justify-content: space-between; margin-top: 22px; }
+.wz-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+button.link { border: none; background: none; color: var(--muted); text-decoration: underline; padding: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border-radius: 999px; padding: 3px 10px; font-size: 13px; }
+ul.facts { padding-left: 18px; }
+ul.facts li { margin: 6px 0; }
+label.check { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0; }
+label.check input { margin-top: 4px; }
+.preset { margin: 12px 0; }
+.row > input[type=url] { flex: 1; width: auto; }

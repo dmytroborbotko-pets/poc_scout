@@ -177,11 +177,12 @@ function interests() {
     el('table', {}, el('tr', {}, el('th', {}, t('axis_name')), el('th', {}, t('axis_question')), el('th', {}, t('axis_on')), el('th', {}, t('axis_counts')), el('th')),
       p.custom_axes.map((a, i) => el('tr', {},
         el('td', {}, el('input', { type: 'text', value: a.name, oninput: (e) => { a.name = e.target.value; changed('profile'); } })),
-        el('td', {}, el('input', { type: 'text', value: a.question, oninput: (e) => { a.question = e.target.value; changed('profile'); } })),
+        el('td', {}, el('input', { type: 'text', value: a.question, placeholder: t('axis_question_placeholder'), oninput: (e) => { a.question = e.target.value; changed('profile'); } })),
         el('td', {}, el('input', { type: 'checkbox', checked: a.enabled, onchange: (e) => { a.enabled = e.target.checked; changed('profile'); } })),
         el('td', {}, el('input', { type: 'checkbox', checked: a.affects_selection, onchange: (e) => { a.affects_selection = e.target.checked; changed('profile'); } })),
         el('td', {}, el('button', { class: 'small', onclick: () => { p.custom_axes.splice(i, 1); changed('profile'); drawAxes(); } }, '✕'))))),
-    el('button', { class: 'small', onclick: () => { p.custom_axes.push({ name: 'my_axis', question: '', enabled: true, affects_selection: false }); changed('profile'); drawAxes(); } }, t('add_axis')));
+    el('button', { class: 'small', onclick: () => { p.custom_axes.push({ name: 'my_axis', question: '', enabled: true, affects_selection: false }); changed('profile'); drawAxes(); } }, t('add_axis')),
+    el('div', { class: 'hint legend' }, t('axis_legend').split('\n').map((l) => el('p', {}, l))));
   drawAxes();
   return [
     field(t('report_language'), t('report_language_hint'), el('input', { type: 'text', value: p.report_language ?? 'en', oninput: (e) => { p.report_language = e.target.value.trim(); changed('profile'); } })),

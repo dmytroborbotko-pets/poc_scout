@@ -64,3 +64,4 @@ dialog::backdrop { background: rgba(0,0,0,.4); }
 .report table { margin: 8px 0; }
 @media (max-width: 640px) { main { padding: 12px; } header { padding: 12px; } td input[type=text] { min-width: 100px; } }
 td:has(> input[type=checkbox]), th:first-child { width: 1%; }
+.legend p { margin: 6px 0; }

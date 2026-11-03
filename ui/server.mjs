@@ -5,6 +5,7 @@
 import { execFileSync, spawn } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
+import { homedir } from 'node:os';
 import { extname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { NAMES, REPO, YAML, diff, read, render, root, write } from '../scripts/lib/config.mjs';
@@ -71,6 +72,17 @@ function describeAction(action) {
   }
 }
 
+// Has the user accepted Claude Code's "trust this folder" prompt here (or for a parent folder)?
+// Read-only: we never write Claude's config.
+function trusted() {
+  try {
+    const p = JSON.parse(readFileSync(join(homedir(), '.claude.json'), 'utf8')).projects ?? {};
+    const parts = root().split('/');
+    for (let i = parts.length; i > 1; i--) if (p[parts.slice(0, i).join('/')]?.hasTrustDialogAccepted) return true;
+  } catch { /* no Claude config yet */ }
+  return false;
+}
+
 function startJob(action) {
   if ([...jobs.values()].some((j) => j.exit === null)) throw Object.assign(new Error('another action is still running'), { status: 409 });
   const [cmd, args] = ACTIONS[action].cmd;
@@ -134,6 +146,7 @@ export function createApp() {
           throw e;
         }
       }
+      if (req.method === 'GET' && url.pathname === '/api/trust') return send(res, 200, { trusted: trusted(), folder: root() });
       if (req.method === 'GET' && url.pathname === '/api/reports') return send(res, 200, listReports());
       if (req.method === 'GET' && url.pathname === '/api/report') return send(res, 200, { text: readFileSync(safeReport(url.searchParams.get('path')), 'utf8') });
       if (req.method === 'POST' && url.pathname === '/api/report-status') {

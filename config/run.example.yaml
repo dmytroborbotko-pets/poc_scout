@@ -1,17 +1,18 @@
 # How and when scans run.
 schedule:
-  enabled: false      # apply changes with: scripts/schedule.sh install (or the Schedule section in the UI)
-  frequency: monthly  # monthly | weekly
-  day_of_month: 1     # monthly: 1–28
-  weekday: 1          # weekly: 0 = Sunday
+  enabled: false # apply changes with: scripts/schedule.sh install (or the Schedule section in the UI)
+  frequency: monthly # monthly | weekly
+  day_of_month: 1 # monthly: 1–28
+  weekday: 1 # weekly: 0 = Sunday
   hour: 10
   minute: 0
 
-budget_usd: 10    # cap per scan (claude --max-budget-usd); on a subscription the cost is notional but the cap still applies
-notify: true      # desktop notification after scheduled scans
-isolate: true     # scan without your personal Claude Code plugins/MCP servers
+budget_usd: 10 # cap per scan (claude --max-budget-usd); on a subscription the cost is notional but the cap still applies
+notify: true # desktop notification after scheduled scans
+isolate: true # scan without your personal Claude Code plugins/MCP servers
 
-models:           # sonnet | opus | haiku
+models:
+  # sonnet | opus | haiku
   scanner: sonnet
   judge: opus
   reporter: sonnet

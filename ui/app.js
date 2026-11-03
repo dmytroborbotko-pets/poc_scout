@@ -10,6 +10,7 @@ let cfg = {}; // { name: { data, hash, exists } }
 let presets = [];
 let actions = {};
 let current = location.hash.slice(1) || 'interests';
+let trust = { trusted: true };
 
 // ---------- helpers ----------
 const $ = (s) => document.querySelector(s);
@@ -33,7 +34,7 @@ async function api(method, path, body) {
 }
 const field = (label, hint, input) => el('label', { class: 'field' }, el('span', {}, label), hint && el('div', { class: 'hint' }, hint), input);
 const slug = (s) => s.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || `item-${Date.now()}`;
-const lines = (v) => v.split('\n').map((s) => s.trim()).filter(Boolean);
+const lines = (v) => v.split(/[\n,;]/).map((s) => s.trim()).filter(Boolean); // people type lists with commas too
 
 function modal(content, { okText, cancel = true } = {}) {
   const d = $('#modal');
@@ -41,10 +42,13 @@ function modal(content, { okText, cancel = true } = {}) {
   $('#modal-ok').textContent = okText ?? t('btn_confirm');
   $('#modal-cancel').classList.toggle('hidden', !cancel);
   d.showModal();
+  $('#modal-body').scrollTop = 0; // always start at the top of the content
+  $('#modal-body').focus({ preventScroll: true }); // keyboard scrolling works, no focus ring on a button
   return new Promise((ok) => {
-    const done = (v) => { d.close(); $('#modal-ok').onclick = $('#modal-cancel').onclick = null; ok(v); };
+    const done = (v) => { d.close(); $('#modal-ok').onclick = $('#modal-cancel').onclick = $('#modal-x').onclick = null; ok(v); };
     $('#modal-ok').onclick = () => done(true);
     $('#modal-cancel').onclick = () => done(false);
+    $('#modal-x').onclick = () => done(false);
     d.oncancel = () => done(false);
   });
 }
@@ -106,14 +110,73 @@ async function preview(name) {
   renderSaveBar(name);
   return r;
 }
+// ---------- plain-language change summary ----------
+const LABELS = {
+  report_language: 'report_language', 'interests.priority': 'priority', 'interests.excluded': 'excluded', 'interests.exceptions': 'exceptions',
+  'custom_axes[]': 'custom_axes', 'custom_axes[].name': 'axis_name', 'custom_axes[].question': 'axis_question', 'custom_axes[].enabled': 'axis_on', 'custom_axes[].affects_selection': 'axis_counts',
+  'sources[]': 'source', 'sources[].enabled': 'on',
+  tool_first: 'tool_first', max_poc_days: 'max_days', 'no_go[]': 'rule', 'no_go[].enabled': 'on', 'no_go[].text': 'rule',
+  'selection.top_n': 'top_n', 'selection.min_sum': 'min_sum',
+  'schedule.enabled': 'schedule_on', 'schedule.frequency': 'frequency', 'schedule.day_of_month': 'day_of_month', 'schedule.weekday': 'weekday',
+  'schedule.hour': 'hour', 'schedule.minute': 'minute', budget_usd: 'budget', notify: 'notify', 'tools[].installed': 'installed',
+};
+const isPlain = (v) => v === null || typeof v !== 'object';
+function flatten(v, path = '', out = new Map()) {
+  if (Array.isArray(v) && v.every(isPlain)) out.set(path, v);
+  else if (Array.isArray(v)) v.forEach((item, i) => flatten(item, `${path}[${item?.id ?? item?.name ?? i}]`, out));
+  else if (!isPlain(v)) { for (const [k, x] of Object.entries(v)) flatten(x, path ? `${path}.${k}` : k, out); if (!Object.keys(v).length) out.set(path, v); }
+  else out.set(path, v);
+  return out;
+}
+const fmt = (v) => {
+  if (v === true) return t('val_on');
+  if (v === false) return t('val_off');
+  if (v == null || v === '' || (Array.isArray(v) && !v.length)) return t('val_empty');
+  const s = Array.isArray(v) ? v.join(', ') : String(v);
+  return s.length > 90 ? `${s.slice(0, 87)}…` : s;
+};
+function label(path) {
+  const w = path.match(/^scores\.(\w+)\.weight$/);
+  if (w) return `${t('weights')} — ${t(`score_${w[1]}`)}`;
+  const item = path.match(/^(\w+)\[([^\]]+)\]\.?(.*)$/);
+  if (item) {
+    const [, group, key, field] = item;
+    const g = t(LABELS[`${group}[]`] ?? group);
+    return field ? `${g} “${key}” — ${t(LABELS[`${group}[].${field}`] ?? field)}` : g;
+  }
+  return t(LABELS[path] ?? path);
+}
+function describeChanges(before, after) {
+  const A = flatten(before), B = flatten(after);
+  const items = (M) => new Set([...M.keys()].map((k) => k.match(/^\w+\[[^\]]+\]/)?.[0]).filter(Boolean));
+  const ia = items(A), ib = items(B);
+  const out = [];
+  for (const k of ib) if (!ia.has(k)) out.push(`${t('chg_added')}: ${label(k)} “${k.match(/\[([^\]]+)\]/)[1]}”`);
+  for (const k of ia) if (!ib.has(k)) out.push(`${t('chg_removed')}: ${label(k)} “${k.match(/\[([^\]]+)\]/)[1]}”`);
+  const gone = (k) => { const p = k.match(/^\w+\[[^\]]+\]/)?.[0]; return p && (!ia.has(p) || !ib.has(p)); };
+  for (const k of new Set([...A.keys(), ...B.keys()])) {
+    if (gone(k)) continue;
+    const from = fmt(A.get(k)), to = fmt(B.get(k));
+    if (from !== to) out.push(`${label(k)}: ${from} → ${to}`); // also hides "[] became a list" bookkeeping
+  }
+  return out;
+}
+
 async function save(name) {
   const r = await preview(name);
   if (r.errors.length) return;
+  const changes = describeChanges(cfg[name].orig ?? {}, cfg[name].data);
   const diffBox = el('pre', {}, r.diff.length ? r.diff.map((l) => el('div', { class: l.startsWith('+') ? 'diff-add' : 'diff-del' }, l)) : t('no_changes'));
-  const ok = await modal(el('div', {}, el('h3', {}, t('confirm_save', { file: `config/${name}.yaml` })), r.stale ? el('p', { class: 'errors' }, t('stale')) : '', diffBox));
+  const ok = await modal(el('div', {},
+    el('h3', {}, t('confirm_save')),
+    r.stale ? el('p', { class: 'errors' }, t('stale')) : '',
+    changes.length ? el('ul', { class: 'changes' }, changes.map((c) => el('li', {}, c))) : el('p', {}, t('no_changes')),
+    el('p', { class: 'hint' }, t('saved_to', { file: `config/${name}.yaml` })),
+    el('details', {}, el('summary', { class: 'hint' }, t('show_file_changes')), diffBox)));
   if (!ok) return;
   try {
     cfg[name].hash = (await api('PUT', `/api/config/${name}`, { data: cfg[name].data, hash: cfg[name].hash })).hash;
+    cfg[name].orig = structuredClone(cfg[name].data);
     status[name] = 'saved';
   } catch (e) {
     status[`${name}:errors`] = e.data?.errors ?? [e.message];
@@ -313,6 +376,8 @@ async function reports() {
 const RENDER = { interests, sources, tools, rubric, schedule, reports };
 
 async function render() {
+  $('#trust').classList.toggle('hidden', trust.trusted);
+  $('#trust').replaceChildren(el('strong', {}, t('trust_title')), el('p', {}, t('trust_body')), el('code', {}, `cd "${trust.folder}" && claude`), el('p', { class: 'hint' }, t('trust_note')));
   $('#nav').replaceChildren(...SECTIONS.map((s) => el('a', { href: `#${s}`, class: s === current ? 'active' : '' }, t(`nav_${s}`))));
   const name = SECTION_CONFIG[current];
   const sec = el('section', {}, el('h2', {}, t(`nav_${current}`)), el('p', { class: 'hint' }, t(`desc_${current}`)));
@@ -324,7 +389,8 @@ async function render() {
 }
 
 async function load() {
-  [cfg, presets, actions] = await Promise.all([api('GET', '/api/config'), api('GET', '/api/presets'), api('GET', '/api/actions')]);
+  [cfg, presets, actions, trust] = await Promise.all([api('GET', '/api/config'), api('GET', '/api/presets'), api('GET', '/api/actions'), api('GET', '/api/trust')]);
+  for (const c of Object.values(cfg)) c.orig = structuredClone(c.data);
   await render();
 }
 

@@ -10,6 +10,8 @@ import YAML, { isMap, isScalar, isSeq } from 'yaml';
 
 export const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 export const NAMES = ['profile', 'sources', 'tools', 'rubric', 'run'];
+// One output style everywhere: no line folding, compact flow lists — so saves don't reformat untouched lines.
+export const YAML_OUT = { lineWidth: 0, flowCollectionPadding: false };
 
 // POCSCOUT_ROOT lets tests (and global installs) point at another working copy.
 export const root = () => process.env.POCSCOUT_ROOT || REPO;
@@ -58,7 +60,8 @@ function sync(doc, path, value) {
   const node = path.length ? doc.getIn(path, true) : doc.contents;
   // An empty `[]` / `{}` in the file is flow style; filling it keeps that style and produces an
   // unreadable one-line blob — switch to normal block style once it gets content.
-  if ((isMap(node) || isSeq(node)) && node.flow && node.items.length === 0) node.flow = false;
+  const filling = (isObj(value) && Object.keys(value).length) || (Array.isArray(value) && value.length);
+  if ((isMap(node) || isSeq(node)) && node.flow && node.items.length === 0 && filling) node.flow = false;
   if (isObj(value) && isMap(node)) {
     for (const [k, v] of Object.entries(value)) {
       if (node.has(k)) sync(doc, [...path, k], v);
@@ -82,7 +85,7 @@ export function render(name, data) {
   const { doc, text } = read(name);
   if (!doc.contents) doc.contents = doc.createNode({});
   sync(doc, [], data);
-  return { before: text, after: doc.toString(), errors: validate(name, data) };
+  return { before: text, after: doc.toString(YAML_OUT), errors: validate(name, data) };
 }
 
 /**

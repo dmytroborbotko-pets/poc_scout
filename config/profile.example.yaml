@@ -1,5 +1,5 @@
 # What you care about. Edit freely — comments and extra fields are kept by every mode.
-report_language: en   # en, uk, de, ...
+report_language: en # en, uk, de, ...
 
 interests:
   # Areas you want most. Leave empty to accept anything not excluded.

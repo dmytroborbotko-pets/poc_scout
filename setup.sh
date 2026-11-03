@@ -36,7 +36,33 @@ echo "✓ $(uname) · node $(node --version) · claude $(claude --version 2>/dev
 
 remember() { mkdir -p state; printf '{"mode":"%s","date":"%s"}\n' "$1" "$(date +%F)" > state/setup.json; }
 
+# Claude Code asks once per folder whether you trust it; until then it ignores this project's
+# settings and prints a warning on every run. We only read Claude's own record of that answer —
+# never write it ourselves, so the security prompt stays yours to accept.
+trusted() {
+  # Trust given to a parent folder covers this one too, so check every ancestor.
+  node -e 'try { const p = JSON.parse(require("fs").readFileSync(require("os").homedir() + "/.claude.json", "utf8")).projects ?? {};
+    const parts = process.argv[1].split("/");
+    for (let i = parts.length; i > 1; i--) if (p[parts.slice(0, i).join("/")]?.hasTrustDialogAccepted) process.exit(0);
+    process.exit(1) } catch { process.exit(1) }' "$(pwd -P)"
+}
+ensure_trust() {
+  trusted && return 0
+  [ -t 0 ] || return 0   # not interactive (scripts, CI): skip, scans still work
+  echo
+  bold "One-time step: allow Claude Code to work in this folder"
+  echo "  Claude will open in this window and ask whether you trust this folder."
+  echo "  1. Choose the \"Yes\" option (usually just press Enter)."
+  echo "  2. When Claude's input box appears, type /exit and press Enter."
+  echo "  You come back here automatically."
+  ask "Press Enter to open Claude…" "" >/dev/null
+  claude || true
+  if trusted; then echo "✓ Claude Code can now work in this folder."
+  else echo "! Claude Code still doesn't trust this folder. Scans will work, but show a warning. Run 'claude' here any time to fix it."; fi
+}
+
 run_ui() {
+  ensure_trust
   echo; bold "Opening the configurator in your browser. Press Ctrl+C here to stop it."
   exec node ui/server.mjs $OPEN
 }
@@ -49,6 +75,7 @@ run_quick() {
 run_technical() {
   node scripts/config.mjs init >/dev/null
   remember technical
+  ensure_trust
   exec node scripts/setup-technical.mjs
 }
 run_nontech_first() {
@@ -57,6 +84,7 @@ run_nontech_first() {
   node scripts/detect-tools.mjs >/dev/null
   remember ui
   echo; echo "Default settings are ready (sources: general-startups preset). You can change everything in the browser."
+  ensure_trust
   if [ -z "$MODE" ]; then [ "$(ask 'Open the browser configurator now? [Y/n]' y)" != n ] || exit 0; fi
   run_ui
 }

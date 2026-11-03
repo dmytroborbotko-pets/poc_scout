@@ -20,7 +20,7 @@ cd poc-scout
 
 Requirements: macOS or Linux (Windows: [WSL](docs/windows-wsl.md)), [Node.js 20+](https://nodejs.org), Claude Code installed and logged in.
 
-First time only: run `claude` once inside the folder and accept the "trust this folder" prompt — until then Claude Code ignores the project's `.claude/settings.json`.
+`./setup.sh` walks you through a one-time step: letting Claude Code work in this folder (its "trust this folder" prompt).
 
 Example output: [one report from a real test scan](docs/example-report.md).
 
